@@ -11,6 +11,8 @@ type TimeoutValue = {
 -- W and interesting way of typing because im too lazy to do it in the normal way <butter>
 type Function = typeof(function() end)
 
+local PreciseTime = require("@game/ReplicatedStorage/Modules/Utils/PreciseTime")
+
 local Main = {}
 
 --[[
@@ -38,7 +40,10 @@ function Main.Timeout(Values:TimeoutValue)
 	local targetCancelFunction:Function = (threadType == 0 and task.cancel or coroutine.close)
 	
 	if shouldYield then
-		task.wait(timeoutValue)
+		local startTime:number = PreciseTime.getPreciseTime()
+		
+		repeat task.wait() until PreciseTime.getPreciseTime() - startTime >= timeoutValue or coroutine.status(targetThread) == "dead"
+		--task.wait(timeoutValue)
 		
 		if coroutine.status(targetThread) == "dead" then
 			return
